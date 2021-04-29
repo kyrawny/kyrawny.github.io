@@ -249,7 +249,7 @@
             }
 
             function step1() {
-                d3.csv('http://cors.io/?https://github.com/kyrawny/kyrawny.github.io/raw/main/HASS_project/data/viewership.csv', function(data) {
+                d3.csv('data/viewership.csv', function(data) {
                 
                     var x = d3.scaleBand()
                         .range([ 0, width ])
