@@ -249,7 +249,7 @@
             }
 
             function step1() {
-                d3.csv('https://github.com/kyrawny/kyrawny.github.io/raw/main/HASS_project/data/viewership.csv', function(data) {
+                d3.csv('http://cors.io/?https://github.com/kyrawny/kyrawny.github.io/raw/main/HASS_project/data/viewership.csv', function(data) {
                 
                     var x = d3.scaleBand()
                         .range([ 0, width ])
@@ -314,7 +314,7 @@
                 // setup resize event
                 window.addEventListener("resize", handleResize)
 
-                margin = {top: 30, right: 30, bottom: 30, left: 30}
+                margin = {top: 30, right: 30, bottom: 90, left: 90}
                 width =  $('figure').width() - margin.left - margin.right
                 height = $('figure').height() - margin.top - margin.bottom
 
