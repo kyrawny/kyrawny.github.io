@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Singapore Carpark Availability Table</title>
+        <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/6.5.0/d3.min.js"></script> -->
+        <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/1.10.23/js/dataTables.semanticui.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/dataTables.semanticui.min.css">
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <div class="ui text container">
+            <h1 class="ui dividing header">
+                Singapore Carpark Availability Table
+            </h1>
+            <p>
+                Get the latest carpark availability in Singapore. By Kyra Wang (1002176).
+            </p>
+        </div>
+        <div class="ui container">
+            <table id="carparktable" class="ui celled table" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Carpark Number</th>
+                        <th>Timestamp</th>
+                        <th>Lot Type</th>
+                        <th>Total Lots</th>
+                        <th>Lot Availability</th>
+                        <th>Utilization (%)</th>
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                        <th>Carpark Number</th>
+                        <th>Timestamp</th>
+                        <th>Lot Type</th>
+                        <th>Total Lots</th>
+                        <th>Lot Availability</th>
+                        <th>Utilization (%)</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <script>
+            $(document).ready(function() {
+                $('#carparktable').DataTable( {
+                    "ajax" : { "url": "https://api.data.gov.sg/v1/transport/carpark-availability",
+                                "dataSrc" : "items.0.carpark_data"
+                    },
+                    "columns": [
+                        { "data": "carpark_number" },
+                        { "data": "update_datetime" },
+                        { "data": "carpark_info.0.lot_type" },
+                        { "data": "carpark_info.0.total_lots" },
+                        { "data": "carpark_info.0.lots_available" },
+                        { "data": "carpark_info.0",
+                            "render": function(data, type, row) {
+                                return Math.round( (data["total_lots"] - data["lots_available"]) / data["total_lots"] * 100 );},
+                            "createdCell": function(cell, cellData, rowData, row, col) {
+                                if ( Math.round( (cellData["total_lots"] - cellData["lots_available"]) / cellData["total_lots"] * 100 ) > 80 ) {
+                                    $(cell).addClass("negative")
+                                }
+                            }
+                        }
+                    ]
+                });
+            });
+        </script>
+    </body>
+</html>
