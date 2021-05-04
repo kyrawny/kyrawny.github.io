@@ -2,73 +2,636 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>Singapore Carpark Availability Table</title>
-        <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/6.5.0/d3.min.js"></script> -->
-        <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
-        <script src="https://cdn.datatables.net/1.10.23/js/dataTables.semanticui.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
-        <link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/dataTables.semanticui.min.css">
-        <link rel="stylesheet" href="style.css">
+        <title>Crime in Singapore</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"
+            integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2"
+            crossorigin="anonymous"></script>
+        <script src="https://d3js.org/d3.v4.js"></script>
+        <script src="https://unpkg.com/intersection-observer"></script>
+        <script src="https://unpkg.com/scrollama"></script>
+        <script src="sankey.js"></script>
+        <link rel="stylesheet" href="https://use.typekit.net/irb2ijh.css">
+        <style>
+            * {
+            box-sizing: border-box;
+            }
+
+            html,
+            body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            }
+
+            main {
+                height: 100%;
+            }
+
+            body {
+            font-family: 'plantin';
+            /* min-height: 1280px; */
+            color: #3b3b3b;
+            font-size: 12px;
+            background-color: #D8CBC2;
+            /* background: url('img/bg_1.jpg') no-repeat center center fixed;
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            -o-background-size: cover;
+            background-size: cover; */
+            }
+
+            p,
+            h1,
+            h2,
+            h3,
+            h4,
+            a {
+            margin: 0;
+            font-weight: 400;
+            }
+
+            a,
+            a:visited,
+            a:hover {
+            color: teal;
+            text-decoration: none;
+            border-bottom: 2px solid currentColor;
+            }
+
+            #videoOuter {
+                position: fixed;
+                width: 100%;
+                height: 100%;
+            }
+
+            #videoInner {
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                right: 0;
+                left: 0;
+                margin: auto;
+                width: 100%;
+                height: auto;
+                opacity: 1;
+            }
+
+            #spacer {
+                height: 100%;
+                width: 100%;
+            }
+
+            #outro {
+            height: 640px;
+            }
+
+            @media (min-width: 840px) {
+            .nav__examples {
+                margin-top: 0;
+                margin-left: 2rem;
+            }
+            }
+            #scrolly {
+              position: relative;
+              display: -webkit-box;
+              display: -ms-flexbox;
+              display: flex;
+              padding: 1rem;
+            }
+      
+            #scrolly > * {
+              -webkit-box-flex: 1;
+              -ms-flex: 1;
+              flex: 1;
+            }
+      
+            article {
+              position: relative;
+              padding: 0 1.2rem;
+              max-width: 25rem;
+            }
+      
+            figure {
+              position: -webkit-sticky;
+              position: sticky;
+              width: 100%;
+              margin: 0;
+              -webkit-transform: translate3d(0, 0, 0);
+              -moz-transform: translate3d(0, 0, 0);
+              transform: translate3d(0, 0, 0);
+              z-index: 0;
+            }
+      
+            figure p {
+              text-align: center;
+              padding: 1rem;
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              -moz-transform: translate(-50%, -50%);
+              -webkit-transform: translate(-50%, -50%);
+              transform: translate(-50%, -50%);
+              font-size: 8rem;
+              font-weight: 900;
+              color: #fff;
+            }
+      
+            .step {
+                display: table;
+                transition: opacity 0.2s ease-out;
+                margin: 0 auto 2rem auto;
+                color: #101010;
+                opacity: 0.1;
+            }
+      
+            .step:last-child {
+              margin-bottom: 0;
+            }
+      
+            .step.is-active {
+              opacity: 1;
+            }
+      
+            .step p {
+                display: table-cell;
+                text-align: left;
+                padding: 1rem;
+                font-size: 1.2rem;
+                vertical-align: middle;
+            }
+
+            #bgWrapper {
+                position: fixed;
+                width: 100%;
+                height: 100%;
+            }
+
+            .bgImg {
+                filter: none;
+                -webkit-filter: grayscale(100%);
+                -moz-filter:    grayscale(100%);
+                -ms-filter:     grayscale(100%);
+                -o-filter:      grayscale(100%);
+                opacity: 0;
+                -webkit-transition: opacity 0.5s ease-in-out;
+                -moz-transition: opacity 0.5s ease-in-out;
+                -o-transition: opacity 0.5s ease-in-out;
+                transition: opacity 0.5s ease-in-out;
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                right: 0;
+                left: 0;
+                margin: auto;
+                width: 100%;
+                height: auto;
+            }
+
+            
+            .node rect {
+            cursor: move;
+            fill-opacity: .9;
+            shape-rendering: crispEdges;
+            }
+
+            .node text {
+            pointer-events: none;
+            }
+
+            .link {
+            fill: none;
+            stroke: #000;
+            stroke-opacity: .2;
+            }
+
+            .link:hover {
+            stroke-opacity: .5;
+            }
+
+            #intro {
+            max-width: 40rem;
+            margin: 1rem auto;
+            text-align: center;
+            }
+
+            .intro__hed {
+            font-size: 2em;
+            margin: 2rem auto 0.5rem auto;
+            }
+
+            .intro__dek {
+            /* color: #8a8a8a; */
+            }
+        </style>
     </head>
     <body>
-        <div class="ui text container">
-            <h1 class="ui dividing header">
-                Singapore Carpark Availability Table
-            </h1>
-            <p>
-                Get the latest carpark availability in Singapore. By Kyra Wang (1002176).
-            </p>
-        </div>
-        <div class="ui container">
-            <table id="carparktable" class="ui celled table" style="width:100%">
-                <thead>
-                    <tr>
-                        <th>Carpark Number</th>
-                        <th>Timestamp</th>
-                        <th>Lot Type</th>
-                        <th>Total Lots</th>
-                        <th>Lot Availability</th>
-                        <th>Utilization (%)</th>
-                    </tr>
-                </thead>
-                <tfoot>
-                    <tr>
-                        <th>Carpark Number</th>
-                        <th>Timestamp</th>
-                        <th>Lot Type</th>
-                        <th>Total Lots</th>
-                        <th>Lot Availability</th>
-                        <th>Utilization (%)</th>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
+        <main>
+            <section id="intro">
+                <h1 class="intro__hed">Victims of Crime in Singapore</h1>
+                <p class="intro__dek">
+                    Scroll to see changes in crime rates over time.
+                </p>
+            </section>
+            <!-- <div id='bgWrapper'>
+                <img class='bgImg' id='bg1' src='img/bg_1.jpg'>
+                <img class='bgImg' id='bg3' src='img/bg_2.jpg'>
+                <img class='bgImg' id='bg4' src='img/bg_3.jpg'>
+                <img class='bgImg' id='bg5' src='img/bg_4.jpg'>
+                <img class='bgImg' id='bg6' src='img/bg_5.png'>
+                <img class='bgImg' id='bg7' src='img/bg_6.jpeg'>
+            </div> -->
+            <section id="scrolly">
+                <article>
+                    <div class="step" data-step="0">
+                        <p>2011<br><br>
+                        
+                        Violent crime and non-violent crime is roughly equal. As expected, the severity of the crime is inversely proportional to the number of victims of that particular crime (e.g. there are more outrage of modesty victims than there are rape victims).
+                        </p>
+                    </div>
+                    <div class="step" data-step="10">
+                        <p>2012<br><br>
+                        
+                        Non-violent crime goes down a bit but there are no real significant changes from the previous year.</p>
+                    </div>
+                    <div class="step" data-step="0.5 1">
+                        <p>2013<br><br>
+                        
+                        Here we see the start of an interesting trend: cheating victims over the next few years go up, while victims of other forms of non-violent property crime go down. With the rise of the internet and connected banking, scams become easier to pull off, compared to the difficulty of getting away with robbery and snatch theft.</p>
+                    </div>
+                    <div class="step" data-step="1 4">
+                        <p>2014<br><br>
+    
+                        Victims of non-sexual violent crime decreases from here on out, possibly due to the increased efficacy of policing in Singapore. On the other hand, the number of victims of sexual violent crime increases. This might not necessarily mean that there is an actual increase in sexual violent crime - a likely explanation is that victims are more willing to report the crimes due to a change in culture.</p>
+                    </div>
+                    <div class="step" data-step="4 7">
+                        <p>2015<br><br>
+    
+                        A massive spike in the number of cheating victims, which remains at this level over the coming years. This is largely due to an increase of e-commerce cheats, credit-for-sex, and internet love scams. Online commercial crime becomes the most prevalent form of crime by far, as the internet and social media becomes intertwined with everyone's daily lives.</p>
+                    </div>
+                    <div class="step" data-step="7 9">
+                        <p>2016<br><br>
+                        
+                        A general decrease in victims of crimes. This is attributed by the Singapore Police Force to the growing network of police cameras and anti-scam initiatives such as teaching convenience store staff how to recognize victims of scams.</p>
+                    </div>
+                    <div class="step" data-step="9 12">
+                        <p>2017<br><br>
+    
+                        Outrage of modesty cases increase - specifically, cases on public transport and at entertainment night spots are key concerns.</p>
+                    </div>
+    
+                    <div class="step" data-step="12 18">
+                        <p>2018<br><br>
+                        
+                        We see that the trends mentioned have persisted: a more digitally-connected population increases the number of targets for scams, and criminals have shifted away from physical theft and robbery to online commercial theft. Additionally, while non-sexual violent crime has decreased due to a more comprehensive policing network, sexual violent crime has gone up, possibly due to a shift in culture regarding the stigma in reporting sexual crimes.</p>
+                    </div>
+                </article>
+        
+                <figure>
+                </figure>
+            </section>
+        </main>
         <script>
-            $(document).ready(function() {
-                $('#carparktable').DataTable( {
-                    "ajax" : { "url": "https://api.data.gov.sg/v1/transport/carpark-availability",
-                                "dataSrc" : "items.0.carpark_data"
-                    },
-                    "columns": [
-                        { "data": "carpark_number" },
-                        { "data": "update_datetime" },
-                        { "data": "carpark_info.0.lot_type" },
-                        { "data": "carpark_info.0.total_lots" },
-                        { "data": "carpark_info.0.lots_available" },
-                        { "data": "carpark_info.0",
-                            "render": function(data, type, row) {
-                                return Math.round( (data["total_lots"] - data["lots_available"]) / data["total_lots"] * 100 );},
-                            "createdCell": function(cell, cellData, rowData, row, col) {
-                                if ( Math.round( (cellData["total_lots"] - cellData["lots_available"]) / cellData["total_lots"] * 100 ) > 80 ) {
-                                    $(cell).addClass("negative")
-                                }
-                            }
+            var main = d3.select("main")
+            var scrolly = main.select("#scrolly")
+            var figure = scrolly.select("figure")
+            var article = scrolly.select("article")
+            var step = article.selectAll(".step")
+            var scroller = scrollama()
+            var margin = {top: 10, right: 10, bottom: 10, left: 10}
+            var height = null
+            var width = null
+            var svg = null
+            var sankey = null
+            var path = null
+            var formatNumber = d3.format(",.0f"),    // zero decimal places
+                format = function(d) { return formatNumber(d) + " " + units; },
+                color = d3.scaleOrdinal(d3.schemeCategory10),
+                units = "Victims"
+
+
+            function update(data) {
+                svg.selectAll("*").remove()
+                d3.csv(data, function(error, data) {
+                    //set up graph in same style as original example but empty
+                    graph = {"nodes" : [], "links" : []};
+
+                    data.forEach(function (d) {
+                    graph.nodes.push({ "name": d.source, "color": d.color});
+                    graph.nodes.push({ "name": d.target, "color": d.color});
+                    graph.links.push({ "source": d.source,
+                                        "target": d.target,
+                                        "value": +d.value,
+                                        "color": d.color });
+                    });
+
+                    // return only the distinct / unique nodes
+                    graph.nodesName = d3.keys(d3.nest()
+                    .key(function (d) { return d.name; })
+                    .object(graph.nodes));
+
+                    // loop through each link replacing the text with its index from node
+                    graph.links.forEach(function (d, i) {
+                    graph.links[i].source = graph.nodesName.indexOf(graph.links[i].source);
+                    graph.links[i].target = graph.nodesName.indexOf(graph.links[i].target);
+                    });
+
+                    var cloneOfNode = JSON.parse(JSON.stringify(graph.nodes));
+
+                    graph.nodesName.forEach(function (d, i) {
+                    for(var j = 0; j < cloneOfNode.length; j++){
+                        if(cloneOfNode[j].name === graph.nodesName[i]) {
+                        graph.nodes[i] = cloneOfNode[j];
                         }
-                    ]
+                    }
+                    });
+                    graph.nodes.length = graph.nodesName.length;
+
+                    // now loop through each nodes to make nodes an array of objects
+                    // rather than an array of strings
+                    graph.nodes.forEach(function (d, i) {
+                    graph.nodes[i] = { "name": d.name , "color": d.color};
+                    });
+
+                    sankey
+                        .nodes(graph.nodes)
+                        .links(graph.links)
+                        .layout(500)
+
+                    // add in the links
+                    var link = svg.append("g").selectAll(".link")
+                        .data(graph.links)
+                    .enter().append("path")
+                        .attr("class", "link")
+                        .attr("d", path)
+                        .style("stroke-width", function(d) { return Math.max(1, d.dy); })
+                        .style("stroke", function(d) {return d.color})
+                        .sort(function(a, b) { return b.dy - a.dy; });
+
+                    // add the link titles
+                    link.append("title")
+                        .text(function(d) {
+                            return d.source.name + " → " + 
+                                d.target.name + "\n" + format(d.value); });
+
+                    // add in the nodes
+                    var node = svg.append("g").selectAll(".node")
+                        .data(graph.nodes)
+                    .enter().append("g")
+                        .attr("class", "node")
+                        .attr("transform", function(d) { 
+                            return "translate(" + d.x + "," + d.y + ")"; })
+                        .call(d3.drag()
+                        .subject(function(d) {
+                            return d;
+                        })
+                        .on("start", function() {
+                            this.parentNode.appendChild(this);
+                        })
+                        .on("drag", dragmove));
+
+                    // add the rectangles for the nodes
+                    node.append("rect")
+                        .attr("height", function(d) { return d.dy; })
+                        .attr("width", sankey.nodeWidth())
+                        .style("fill", function(d) { 
+                            return d.color})
+                    .append("title")
+                        .text(function(d) { 
+                            return d.name + "\n" + format(d.value); });
+
+                    // add in the title for the nodes
+                    node.append("text")
+                        .attr("x", -6)
+                        .attr("y", function(d) { return d.dy / 2; })
+                        .attr("dy", ".35em")
+                        .attr("text-anchor", "end")
+                        .attr("transform", null)
+                        .text(function(d) { return d.name + " " + d.value; })
+                    .filter(function(d) { return d.x < width / 2; })
+                        .attr("x", 6 + sankey.nodeWidth())
+                        .attr("text-anchor", "start");
+
+                    function dragmove(d) {
+                        d3.select(this)
+                            .attr("transform", 
+                                "translate(" 
+                                    + d.x + "," 
+                                    + (d.y = Math.max(
+                                        0, Math.min(height - d.dy, d3.event.y))
+                                        ) + ")");
+                        sankey.relayout();
+                        link.attr("d", path);
+                    }
+                })
+            }
+
+            // generic window resize listener event
+            function handleResize() {
+                // 1. update height of step elements
+                var stepH = Math.floor(window.innerHeight * 0.75)
+                step.style("height", stepH + "px")
+
+                var figureHeight = window.innerHeight / 2
+                var figureMarginTop = (window.innerHeight - stepH) / 2
+
+                figure
+                .style("height", stepH + "px")
+                .style("top", figureMarginTop + "px")
+
+                width =  $('figure').width() - margin.left - margin.right
+                height = $('figure').height() - margin.top - margin.bottom
+
+                // 3. tell scrollama to update new element dimensions
+                scroller.resize()
+            }
+
+            // scrollama event handlers
+            function handleStepEnter(response) {
+                // console.log(response)
+                index = response.index
+                // response = { element, direction, index }
+
+                // add color to current step only
+                step.classed("is-active", function(d, i) {
+                return i === response.index
                 });
-            });
+
+                // update graphic based on step
+                var yearstep = response.index + 2011
+
+                var fnstring = yearstep + ".csv"
+
+                console.log(fnstring)
+
+                update(fnstring)
+
+                // d3.selectAll('img')
+                //     .style('opacity', 0)
+
+                // var gotID = "#bg" + response.index
+                // $(gotID).css("opacity", 0.1)
+            }
+
+            function setupStickyfill() {
+                d3.selectAll(".sticky").each(function() {
+                Stickyfill.add(this)
+                })
+            }
+
+            function init() {
+                setupStickyfill()
+
+                // 1. force a resize on load to ensure proper dimensions are sent to scrollama
+                handleResize()
+
+                // 2. setup the scroller passing options
+                // 		this will also initialize trigger observations
+                // 3. bind scrollama event handlers (this can be chained like below)
+                scroller
+                .setup({
+                    step: "#scrolly article .step",
+                    offset: 0.33,
+                    debug: false
+                })
+                .onStepEnter(handleStepEnter)
+
+                svg = figure
+                    .append("svg")
+                        .attr("width", width + margin.left + margin.right)
+                        .attr("height", height + margin.top + margin.bottom)
+                    .append("g")
+                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+
+                sankey = d3.sankey()
+                    .nodeWidth(5)
+                    .nodePadding(5)
+                    .size([width, height])
+
+                path = sankey.link()
+
+                // d3.csv("2011.csv", function(error, data) {
+ 
+                //     //set up graph in same style as original example but empty
+                //     graph = {"nodes" : [], "links" : []};
+
+                //     data.forEach(function (d) {
+                //     graph.nodes.push({ "name": d.source, "color": d.color});
+                //     graph.nodes.push({ "name": d.target, "color": d.color});
+                //     graph.links.push({ "source": d.source,
+                //                         "target": d.target,
+                //                         "value": +d.value,
+                //                         "color": d.color });
+                //     });
+
+                //     // return only the distinct / unique nodes
+                //     graph.nodesName = d3.keys(d3.nest()
+                //     .key(function (d) { return d.name; })
+                //     .object(graph.nodes));
+
+                //     // loop through each link replacing the text with its index from node
+                //     graph.links.forEach(function (d, i) {
+                //     graph.links[i].source = graph.nodesName.indexOf(graph.links[i].source);
+                //     graph.links[i].target = graph.nodesName.indexOf(graph.links[i].target);
+                //     });
+
+                //     var cloneOfNode = JSON.parse(JSON.stringify(graph.nodes));
+
+                //     graph.nodesName.forEach(function (d, i) {
+                //     for(var j = 0; j < cloneOfNode.length; j++){
+                //         if(cloneOfNode[j].name === graph.nodesName[i]) {
+                //         graph.nodes[i] = cloneOfNode[j];
+                //         }
+                //     }
+                //     });
+                //     graph.nodes.length = graph.nodesName.length;
+
+                //     // now loop through each nodes to make nodes an array of objects
+                //     // rather than an array of strings
+                //     graph.nodes.forEach(function (d, i) {
+                //     graph.nodes[i] = { "name": d.name , "color": d.color};
+                //     });
+
+                //     sankey
+                //         .nodes(graph.nodes)
+                //         .links(graph.links)
+                //         .layout(1000);
+
+                //     // add in the links
+                //     var link = svg.append("g").selectAll(".link")
+                //         .data(graph.links)
+                //     .enter().append("path")
+                //         .attr("class", "link")
+                //         .attr("d", path)
+                //         .style("stroke-width", function(d) { return Math.max(1, d.dy); })
+                //         .style("stroke", function(d) {return d.color})
+                //         .sort(function(a, b) { return b.dy - a.dy; });
+
+                //     // add the link titles
+                //     link.append("title")
+                //         .text(function(d) {
+                //             return d.source.name + " → " + 
+                //                 d.target.name + "\n" + format(d.value); });
+
+                //     // add in the nodes
+                //     var node = svg.append("g").selectAll(".node")
+                //         .data(graph.nodes)
+                //     .enter().append("g")
+                //         .attr("class", "node")
+                //         .attr("transform", function(d) { 
+                //             return "translate(" + d.x + "," + d.y + ")"; })
+                //         .call(d3.drag()
+                //         .subject(function(d) {
+                //             return d;
+                //         })
+                //         .on("start", function() {
+                //             this.parentNode.appendChild(this);
+                //         })
+                //         .on("drag", dragmove));
+
+                //     // add the rectangles for the nodes
+                //     node.append("rect")
+                //         .attr("height", function(d) { return d.dy; })
+                //         .attr("width", sankey.nodeWidth())
+                //         .style("fill", function(d) { 
+                //             return d.color})
+                //     .append("title")
+                //         .text(function(d) { 
+                //             return d.name + "\n" + format(d.value); });
+
+                //     // add in the title for the nodes
+                //     node.append("text")
+                //         .attr("x", -6)
+                //         .attr("y", function(d) { return d.dy / 2; })
+                //         .attr("dy", ".35em")
+                //         .attr("text-anchor", "end")
+                //         .attr("transform", null)
+                //         .text(function(d) { return d.name + " " + d.value; })
+                //     .filter(function(d) { return d.x < width / 2; })
+                //         .attr("x", 6 + sankey.nodeWidth())
+                //         .attr("text-anchor", "start");
+
+                //     // the function for moving the nodes
+                //     function dragmove(d) {
+                //     d3.select(this)
+                //         .attr("transform", 
+                //             "translate(" 
+                //                 + d.x + "," 
+                //                 + (d.y = Math.max(
+                //                     0, Math.min(height - d.dy, d3.event.y))
+                //                     ) + ")");
+                //     sankey.relayout();
+                //     link.attr("d", path);
+                //     }
+
+                //     console.log(graph)
+                // })
+
+                // setup resize event
+                window.addEventListener("resize", handleResize)
+            }
+
+            init()
         </script>
     </body>
 </html>

@@ -230,18 +230,18 @@
                 <div class="step" data-step="10">
                     <p>"The Queen's Gambit", Netflix's 2020 surprise hit, set the record as the most-watched scripted limited series to date on the streaming platform. Within the first 28 days of the miniseries' release, 62 million member accounts had tuned in to watch the coming-of-age period drama.</p>
                 </div>
-                <div class="step" data-step="3">
+                <div class="step" data-step="0 1">
                     <p>But what really made the success of the show surprising was not its genre, but rather its subject: the ancient game of chess. What was stereotypically seen as stale, slow and boring was given new life - each game was depicted as a tense & thrilling battle, and the protagonist, Beth Harmon, was equal parts glamourous and relatable.<br><br>
                     
                     No wonder that interest in chess exploded after the release of the show. But "The Queen's Gambit" was just one factor in the perfect storm that led to the massive chess boom of 2020.</p>
                 </div>
-                <div class="step" data-step="4">
+                <div class="step" data-step="1 4">
                     <p>December 2019 marked the start of the COVID-19 pandemic. The virus was first identified in Wuhan, China, and the World Health Organization declared a Public Health Emergency of International Concern on 30 January 2020.<br><br>
 
                     As more and more states implemented stay-at-home and lockdown orders in response to the ballooning number of cases, people became unable to participate in many of their usual social gatherings and hobbies. Many of these people slowly turned to learning chess, a social activity that could be easily conducted within the confines of their homes.
                     </p>
                 </div>
-                <div class="step" data-step="4">
+                <div class="step" data-step="4 7">
                     <p>In March 2020, COVID-19 brought the world of sports to a standstill, as most major events were cancelled or postponed across the globe. The NBA season was suspended; Tokyo 2020 became 2021; Wimbledon was scrapped. Even professional chess wasn't spared, ironically: the Candidates Tournament, an 8-player round robin to determine the next challenger for the World Championship against Magnus Carlsen, was postponed after 7 rounds.<br><br>
 
                     But all these cancellations meant that people were desperate for any sort of entertainment to fill in the idle hours at home. The number of new chess players began to accelerate, and the online chess industry took note. Elite chess tournaments move from the board to the screen, and events such as the April 2020 Magnus Carlsen Invitational received media attention as one of the few sports events during the pandemic.<br><br>
@@ -249,13 +249,13 @@
                     But little did anyone know that one of the biggest chess tournaments of the year would involve no grandmasters.
                     </p>
                 </div>
-                <div class="step" data-step="4">
+                <div class="step" data-step="7 9">
                     <p>The first PogChamps tournament was announced in late May 2020 by Chess.com, the largest online chess server. PogChamps was advertised as an amateur chess tournament, where the participants were internet personalities (primarily Twitch streamers). These were not people who were good at chess - in fact, most had never played the game before. In the 2 months leading up to the tournament, these beginners were coached by titled chess masters, and their triumphs, failures, and trash-talking were all broadcast as part of the show.<br><br>
 
                     While there were some detractors who claimed that the tournament promoted "bad chess" and was displacing "real chess content", no one can argue against the impact that PogChamps had on drawing in new players. People who would never have touched a rook or a knight before watched PogChamps because the participants were professional entertainers that they already knew from other content. The chess wasn't grandmaster level, but it was more relatable to the average player. And blundering a queen is always funny.
                     </p>
                 </div>
-                <div class="step" data-step="4">
+                <div class="step" data-step="9 12">
                     <p>While all that would have already made 2020 one of the best years for chess in recent memory, the biggest surprise was yet to come.<br><br>
 
                     "The Queen's Gambit" released on Netflix on October 23 2020. It was nearly never made - director Scott Frank had been attempting to get Walter Tevis' book of the same name adapted since 1992, after acquiring the screenplay rights from Tevis' widow.<br><br>
@@ -266,7 +266,7 @@
                     </p>
                 </div>
 
-                <div class="step" data-step="4">
+                <div class="step" data-step="12 18">
                     <p>The effects of The Queen's Gambit on the popularity of chess persists even up to now, well into the new year.<br><br>
                     
                     PogChamps just held their third edition of the tournament in February 2021, this time including not just Twitch streamers, but mainstream celebrities as well, such as actor Rainn Wilson, poker player Daniel Negreanu, and rapper Logic. The Chess category on Twitch.tv surged, becoming (for a period of time) the most watched game ahead of heavy hitters like Fortnite & League of Legends.<br><br>
@@ -324,7 +324,7 @@
 
             // scrollama event handlers
             function handleStepEnter(response) {
-                console.log(response)
+                // console.log(response)
                 index = response.index
                 // response = { element, direction, index }
 
@@ -348,7 +348,24 @@
             }
 
             function handleStepProgress(response) {
-                console.log(response);
+                // console.log(response)
+                if (2 <= index <= 7) {
+                    var el = d3.select(response.element)
+                    var dataStepArray = el.attr("data-step").split(" ")
+                    for (var i=0; i<dataStepArray.length; i++) {dataStepArray[i] = +dataStepArray[i]}
+                    var graphProgress = (dataStepArray[0] + (response.progress * (dataStepArray[1] - dataStepArray[0]))) / 18
+                    console.log(graphProgress)
+                    step2progress(graphProgress)
+                }
+            }
+
+            function handleStepExit(response) {
+                // console.log(response)
+                var fnstring = "step" + response.index + "exit"
+
+                var fn = window[fnstring]
+
+                if (typeof fn === "function") fn()
             }
 
             function step0() {
@@ -356,6 +373,7 @@
                 $("#myBoard").css("opacity", 1)
                 
                 if (!queensGambitIsRun) {
+                    board.start()
                     queensGambit()
                     queensGambitIsRun = true
                 }
@@ -427,11 +445,11 @@
                         .duration(400)
                         .attr("y", function(d) { return y(d.Viewership); })
                         .attr("height", function(d) { return height - y(d.Viewership); })
-                        .delay(function(d,i){console.log(i) ; return(i*50)})
+                        .delay(function(d,i){return(i*50)})
                 })
             }
 
-            function step2() {
+            function step2progress(percent) {
                 $("#myBoard").css("opacity", 0)
                 d3.selectAll("svg").remove()
                 
@@ -462,12 +480,15 @@
                     var x = d3.scaleTime()
                         .domain(d3.extent(data, function(d) {return d.Month}))
                         .range([0, (width/2) - margin.left/3])
-                    svg
+
+                    var numDays = d3.timeDay.count(x.domain()[0], x.domain()[1])
+
+                    var xAxis = svg
                         .append("g")
                         .attr("transform", "translate(0," + height/2 + ")")
-                        .call(d3.axisBottom(x).ticks(10))
+                        .call(d3.axisBottom(x).ticks(10).tickFormat(d3.timeFormat("%b-%y")))
                         .selectAll("text")
-                            .attr("transform", "translate(-10,0)rotate(-30)")
+                            .attr("transform", "translate(-10,0)rotate(-45)")
                             .style("text-anchor", "end");
 
                     // var y = d3.scaleLinear()
@@ -484,7 +505,6 @@
                             var eachKey = s.values
                             var svg1 = d3.select(this)
                             var yMax = d3.max(eachKey, d => +d.Value );
-                            console.log(yMax)
                             var yScale = d3.scaleLinear().domain([0, yMax]).range([height/2, 0]);
                             var yAxis = d3.axisLeft(yScale).ticks(5);
                             yarr.push(yScale)
@@ -500,9 +520,10 @@
                         .domain(allKeys)
                         .range(['#b44034','#5a263d','#5c4c5d','#91af8d'])
 
-                    svg
+                    var area = svg
                         .append("path")
                             .attr("fill", function(d){return color(d.key)})
+                            .attr("class", "myArea")
                             .attr("stroke", "none")
                             .attr("d", function(d, i){
                                 return d3.area()
@@ -529,6 +550,21 @@
                         .attr("x", 0)
                         .text(function(d){ return(d.key)})
                         .style("fill", "#101010")
+
+                    x.domain([x.domain()[0], d3.timeDay.offset(x.domain()[0], numDays*percent)])
+                        
+                    xAxis.transition().duration(1000).call(d3.axisBottom(x))
+                    area
+                        .select('.myArea')
+                        .transition()
+                        .duration(1000)
+                        .attr("d", function(d, i){
+                            return d3.area()
+                                .x(function(d) {return x(d.Month)})
+                                .y0(yarr[i](0))
+                                .y1(function(d) {return yarr[i](+d.Value)})
+                                (d.values)
+                        })
                 })
 
             }
@@ -551,10 +587,12 @@
                 scroller
                 .setup({
                     step: "#scrolly article .step",
+                    progress: true,
                     offset: 0.33,
                     debug: false
                 })
                 .onStepEnter(handleStepEnter)
+                .onStepProgress(handleStepProgress)
 
                 // setup resize event
                 window.addEventListener("resize", handleResize)
@@ -574,6 +612,7 @@
             
             async function queensGambit () {
                 queensGambitIsRun = true
+                await sleep(1200)
                 if (index != 0) {
                     queensGambitIsRun = false
                     return

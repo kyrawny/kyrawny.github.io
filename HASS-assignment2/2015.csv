@@ -1,0 +1,11 @@
+source,target,value,color
+Non-Sexual,Murder,14,#ac5430
+Sexual,Rape,260,#ebb783
+Sexual,Outrage Of Modesty,1834,#ebb783
+Non-Violent,Robbery,139,#499092
+Non-Violent,Snatch Theft,92,#499092
+Non-Sexual,Rioting,230,#ac5430
+Non-Sexual,Serious Hurt,568,#ac5430
+Non-Violent,Cheating & Related,7342,#499092
+Violent,Sexual,2094,#b77745
+Violent,Non-Sexual,812,#b77745
