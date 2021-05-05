@@ -108,7 +108,7 @@ Promise.all([d3.json("sgmap.json"), d3.csv("population2020.csv")]).then(data => 
         	if (typeof d.properties.male !== "undefined"){
         		return color(d.properties.male);
     		}else{
-        		return "#777";
+        		return "#222";
     		}
     	})
         .append("title")
