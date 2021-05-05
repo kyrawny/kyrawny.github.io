@@ -1,0 +1,43 @@
+source,target,value,color
+Corporate Income Tax,Tax,17968,#91af8d
+Personal Income Tax,Tax,12373,#91af8d
+Withholding Tax,Tax,1648,#91af8d
+Statutory Boards' Contributions,Tax,2505,#91af8d
+Assets Taxes,Tax,4742,#91af8d
+"Customs, Excise and Carbon Taxes",Tax,3773,#91af8d
+Goods and Services Tax,Tax,11344,#91af8d
+Motor Vehicle Taxes,Tax,2516,#91af8d
+Vehicle Quota Premiums,Tax,2276,#91af8d
+Betting Taxes,Tax,2408,#91af8d
+Stamp Duty,Tax,4253,#91af8d
+Other Taxes,Fees and Charges,6434,#006a7a
+Fees and Charges (Excluding Vehicle Quota Premiums),Fees and Charges,3909,#006a7a
+Tax,Budget,65806,#91af8d
+Fees and Charges,Budget,10343,#006a7a
+Others,Budget,487,#606266
+Investment Income,Budget,19556,#606266
+Reserves,Budget,11010,#b44034
+Budget,Total Expenditure,102338,#606266
+Budget,Special Transfers,4863,#606266
+Social Development,Education,13620,#e1a6ac
+Social Development,National Development,5529,#e1a6ac
+Social Development,Health,18845,#e1a6ac
+Social Development,Environment,2904,#e1a6ac
+Social Development,MCCY,2272,#e1a6ac
+Social Development,Family Development,4113,#e1a6ac
+Social Development,Communications,629,#e1a6ac
+Social Development,Manpower,1560,#e1a6ac
+Security and External Relations,Defence,15361,#995856
+Security and External Relations,Home Affairs,7876,#995856
+Security and External Relations,Foreign Affairs,434,#995856
+Economic Development,Transport,5617,#ce9643
+Economic Development,Trade and Industry,11066,#ce9643
+Economic Development,Info-Comms,7175,#ce9643
+Government Administration,Finance,812,#ac674c
+Government Administration,Law,2068,#ac674c
+Government Administration,Organs of State,481,#ac674c
+Government Administration,Prime Minister's Office,711,#ac674c
+Total Expenditure,Social Development,49472,#e1a6ac
+Total Expenditure,Security and External Relations,23671,#995856
+Total Expenditure,Economic Development,23858,#ce9643
+Total Expenditure,Government Administration,4072,#ac674c
