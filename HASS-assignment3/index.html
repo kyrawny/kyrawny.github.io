@@ -1,0 +1,128 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body{
+        background-color: #D8CBC2;
+    }
+    path{
+        opacity: 1;
+    }
+    path:hover{
+        opacity: .5;
+    }
+  </style>
+</head>
+<body>
+<svg></svg>
+<script src="https://d3js.org/d3.v6.min.js"></script>
+
+<script>
+
+let width = 1000, height = 600;
+
+let svg = d3.select("svg")
+    .attr("viewBox", "0 0 " + width + " " + height)
+
+// Load external data and boot
+Promise.all([d3.json("sgmap.json"), d3.csv("population2020.csv")]).then(data => {
+
+    console.log(data[0]);
+    console.log(data[1]);
+
+    data[0].features.forEach (map => {
+        let result = data[1].filter( zone => {
+			return zone.Subzone.toUpperCase() === map.properties.Name
+		});
+		//console.log(result[0].PopMale);
+		if ((typeof result[0] !== "undefined") && (result[0].PopMale !== "-")) {
+        		map.properties.male = result[0].PopMale;
+		}
+	});
+
+    // Map and projection
+    var projection = d3.geoMercator()
+        .center([103.851959, 1.290270])
+        .fitExtent([[20, 20], [980, 580]], data[0]);
+
+    let geopath = d3.geoPath().projection(projection);
+
+    var x = d3.scaleLinear()
+        .domain([0, 20000])
+        .range([600, 880]);
+    
+    var color = d3.scaleQuantize()
+        .domain([0,20000])
+        .range(d3.schemeBlues[8]);
+    
+    var g = svg.append("g")
+        .attr("class", "key")
+        .attr("transform", "translate(0,40)");
+        
+    //creating the legend
+    g.selectAll("rect")
+        .data(color.range().map(d => {
+            d = color.invertExtent(d);
+            if (d[0] == null) d[0] = x.domain()[0];
+            if (d[1] == null) d[1] = x.domain()[1];
+            //console.log(d);
+            return d;
+        }))
+        .enter().append("rect")
+        .attr("height", 8)
+        .attr("x",(d,i) => {
+    		return i*35 + 600;
+    	})
+        .attr("width",35)
+        .attr("fill", d => {
+            return color(d[0]); 
+        });
+    
+    
+    g.append("text")
+        .attr("class", "caption")
+        .attr("x", x.range()[0])
+        .attr("y", -6)
+        .attr("fill", "#000")
+        .attr("text-anchor", "start")
+        .attr("font-weight", "bold")
+        .text("Male Population");
+    
+    g.call(d3.axisBottom(x)
+        .tickSize(13)
+        .tickValues([2500, 5000, 7500, 10000, 12500, 15000, 17500, 20000])
+        )
+      .select(".domain")
+        .remove();
+
+    svg.append("g")
+        .attr("id", "districts")
+        .selectAll("path")
+        .data(data[0].features)
+        .enter()
+        .append("path")
+        .attr("d", geopath)
+        .attr("fill", d => {
+        	if (typeof d.properties.male !== "undefined"){
+        		return color(d.properties.male);
+    		}else{
+        		return "#777";
+    		}
+    	})
+        .append("title")
+        .text(d => { 
+            if (typeof d.properties.male !== "undefined"){
+        		return d.properties.Name + ": " + d.properties.male;
+    		}else{
+        		return d.properties.Name + ": No Data Available";
+    		} 
+        });	;
+})
+
+</script>
+
+</body>
+</html>
+                        
