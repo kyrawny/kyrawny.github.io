@@ -1,0 +1,231 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+                    
+    <style>
+    body{
+        background-color: #D8CBC2;
+    }
+    body { margin: 0 }
+    #map {
+        width: 100vw;
+        height: 100vh;
+    }
+    path{
+        transition: opacity 0.2s ease-out;
+        opacity: 1;
+    }
+    path:hover{
+        opacity: .5;
+    }
+    #legend {
+        position: fixed;
+        bottom: 2%;
+        left: 2%;
+        z-index: 1000;
+        width:300px;
+        height:50px;
+    }
+    #title{
+        position: fixed;
+        top: 5%;
+        left: 50%;
+        margin-left: -100px;
+        width: 200px;
+        font-size: 18px;
+        color: white;
+        z-index: 800;
+        text-align: center;
+        text-shadow: 2px 2px #10101055;
+        background: #10101033;	
+    }
+    div.tooltip {	
+    position: absolute;			
+    text-align: center;			
+    width: 100px;					
+    height: auto;					
+    padding: 2px;					
+    background: lightsteelblue;		
+    pointer-events: none;
+    color: white;
+    text-shadow: 2px 2px #10101055;	
+    }
+    </style>
+</head>
+<body>
+<div id="legend"><svg style="height: 100%; width: 100%"></svg></div>
+<div id="map"></div>
+<div id="title">
+    <h3>SG gender population 2020</h3>
+</div>
+<script src="https://d3js.org/d3.v6.min.js"></script>
+
+<script>
+
+let legendwrapper = d3.select("#legend")
+let legendsvg = legendwrapper.select("svg")
+
+let tiles = new L.tileLayer('https://maps-{s}.onemap.sg/v3/Default/{z}/{x}/{y}.png', {
+    detectRetina: true,
+    maxZoom: 18,
+    minZoom: 11,
+    //Do not remove this attribution
+    attribution: '<img src="https://docs.onemap.sg/maps/images/oneMap64-01.png" style="height:20px;width:20px;">' +
+                'New OneMap | Map data © contributors, <a href="http://SLA.gov.sg">Singapore Land Authority</a>'
+});
+
+
+let map = new L.Map("map", {
+    center: [1.347833, 103.809357], 
+    zoom: 12,
+    maxBounds: L.latLngBounds(L.latLng(1.1, 103.5), L.latLng(1.5, 104.3))
+    })
+    .addLayer(tiles);
+
+let svg = d3.select(map.getPanes().overlayPane)
+    .append("svg")
+    .attr("width", window.innerWidth)
+    .attr("height", window.innerHeight)
+        .append("g")
+        .attr("id","svgLayer")
+        .attr("class", "leaflet-zoom-hide");
+
+function projectPoint(x, y) {
+    var point = map.latLngToLayerPoint(new L.LatLng(y, x));
+    this.stream.point(point.x, point.y);
+}
+
+let projection = d3.geoTransform({point: projectPoint});
+let geopath = d3.geoPath().projection(projection);
+let popType = "Male";
+
+// Load external data and boot
+Promise.all([d3.json("sgmap.json"), d3.csv("population2020.csv")]).then(data => {
+
+    data[0].features.forEach (map => {
+        let result = data[1].filter( zone => {
+			return zone.Subzone.toUpperCase() === map.properties.Name
+		});
+		//console.log(result[0].PopMale);
+		if ((typeof result[0] !== "undefined") && (result[0].PopMale !== "-")) {
+        		map.properties.male = result[0].PopMale;
+		}
+	});
+
+    // Map and projection
+    var x = d3.scaleLinear()
+        .domain([0, 20000])
+        .range([100, 380]);
+    
+    var color = d3.scaleQuantize()
+        .domain([0,20000])
+        .range(d3.schemeBlues[8]);
+    
+    var legend = legendsvg.append("g")
+        .attr("transform", "translate(-100,20)");
+
+    var tooltip = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0)
+        .style("z-index", 1000)
+        
+    //creating the legend
+    legend.selectAll("rect")
+        .data(color.range().map(d => {
+            d = color.invertExtent(d);
+            if (d[0] == null) d[0] = x.domain()[0];
+            if (d[1] == null) d[1] = x.domain()[1];
+            //console.log(d);
+            return d;
+        }))
+        .enter().append("rect")
+        .attr("height", 8)
+        .attr("x",(d,i) => {
+    		return i*35 + 100;
+    	})
+        .attr("width",35)
+        .attr("fill", d => {
+            return color(d[0]); 
+        });
+    
+    
+    legend.append("text")
+        .attr("class", "caption")
+        .attr("x", x.range()[0])
+        .attr("y", -6)
+        .attr("fill", "#000")
+        .attr("text-anchor", "start")
+        .attr("font-weight", "bold")
+        .text("Male Population");
+    
+    legend.call(d3.axisBottom(x)
+        .tickSize(13)
+        .tickValues([2500, 5000, 7500, 10000, 12500, 15000, 17500, 20000])
+        )
+      .select(".domain")
+        .remove();
+
+    svg.append("g")
+        .attr("id", "districts")
+        .selectAll("path")
+        .data(data[0].features)
+        .enter()
+        .append("path")
+        .attr("d", geopath)
+        .classed("district", true)
+        .classed("leaflet-interactive", true)
+        .attr("fill", d => {
+        	if (typeof d.properties.male !== "undefined"){
+        		return color(d.properties.male);
+    		}else{
+        		return "#222";
+    		}
+    	})
+        .on("mouseover", function(event, d) {	
+            tooltip.transition()
+                .duration(200)
+                .style("opacity", .9)
+                .style("left", (event.pageX) + "px")		
+                .style("top", (event.pageY - 28) + "px")
+                if (typeof d.properties.male !== "undefined"){
+                    tooltip.text(d.properties.Name + ": \n\n" + d.properties.male)
+                }else{
+                    tooltip.text(d.properties.Name + ": \n\nNo Data Available")
+                } 
+        })
+        .on("mouseout", function(d) {		
+            tooltip.transition()		
+                .duration(200)		
+                .style("opacity", 0);	
+        });
+    
+    map.on('zoomend', onZoom);
+    onZoom();
+    
+    function onZoom() {
+        var bounds = geopath.bounds(data[0]),
+            topLeft = bounds[0],
+            bottomRight = bounds[1];
+
+        var svg = d3.select(map.getPanes().overlayPane).select("svg");
+            
+        svg.attr("width", bottomRight[0] - topLeft[0])
+           .attr("height", bottomRight[1] - topLeft[1])
+           .style("left", topLeft[0] + "px")
+           .style("top", topLeft[1] + "px");
+           
+        svg.select("g").attr("transform", "translate(" + -topLeft[0] + "," + -topLeft[1] + ")");
+        d3.select("g#districts").selectAll("path")
+           .attr("d", geopath);
+    }
+})
+
+</script>
+
+</body>
+</html>
+                        
